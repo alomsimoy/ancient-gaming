@@ -3,10 +3,9 @@ import { GraphQLModule } from '@nestjs/graphql';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BetResolver } from './bet.resolver';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { User } from './user.model';
-import { UserModule } from './user.module';
+import { UserModule } from './user/user.module';
+import { BetModule } from './bet/bet.module';
 
 @Module({
   imports: [
@@ -23,9 +22,10 @@ import { UserModule } from './user.module';
       autoLoadModels: true,
     }),
     UserModule,
+    BetModule,
   ],
   controllers: [AppController],
-  providers: [AppService, BetResolver]
+  providers: [AppService]
 })
 
 export class AppModule {}
