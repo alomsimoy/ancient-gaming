@@ -1,4 +1,5 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UserService } from './user.service';
 
 export interface UserEntity {
   id: number;
@@ -8,6 +9,7 @@ export interface UserEntity {
 
 @Resolver('User')
 export class UserResolver {
+  constructor(private readonly userService: UserService) {}
   private users: UserEntity[] = [
     {
       id: 1,
@@ -27,8 +29,8 @@ export class UserResolver {
   }
   
   @Query('getUserList')
-  getUserList(): UserEntity[] {
-    return this.users;
+  getUserList(): Promise<UserEntity[]> {
+    return this.userService.findAll();
   }
 
   @Mutation()
