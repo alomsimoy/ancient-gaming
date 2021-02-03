@@ -22,5 +22,6 @@ type Query {
 }
 
 type Mutation {
+    addUser(name: String, balance: Float): User
     createBet(userId: Int, betAmount: Float, chance: Float): Bet
 }
