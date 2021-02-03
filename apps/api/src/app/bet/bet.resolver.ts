@@ -1,4 +1,5 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { UserService } from '../user/user.service';
 import { BetService } from './bet.service';
 
 export interface BetEntity {
@@ -12,7 +13,7 @@ export interface BetEntity {
 
 @Resolver('Bet')
 export class BetResolver {
-  constructor(private readonly betService: BetService) {}
+  constructor(private readonly betService: BetService, private readonly userService: UserService) {}
 
   @Query('getBet')
   getBet(@Args('id') id: number): Promise<BetEntity> {
@@ -30,18 +31,29 @@ export class BetResolver {
   }
 
   @Mutation()
-  createBet(
+  async createBet(
     @Args('userId') userId: number,
     @Args('betAmount') betAmount: number,
     @Args('chance') chance: number
   ): Promise<BetEntity> {
-    const dice = Math.random() * 100;
+    const user = await this.userService.findOne(userId.toString());
+    
+    if (user.balance < betAmount) {
+      throw `Your balance (${user.balance}) is not enough.`
+    }
 
+    const dice = Math.random() * 100;
+    const payout = ((betAmount * (chance - dice + 100)) / 100) - betAmount;
+
+    user.balance = user.balance + payout;
+
+    user.save();
+    
     return this.betService.create(
       userId,
       betAmount,
       chance,
-      ((betAmount * (chance - dice + 100)) / 100) - betAmount,
+      payout,
       chance > dice
     )
   }
