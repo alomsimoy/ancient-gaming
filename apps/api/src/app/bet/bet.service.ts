@@ -38,13 +38,16 @@ export class BetService {
     });
   }
 
-  findBestPerUser(limit?: number): Promise<Bet[]> {
-    return this.betModel.findAll({
-      attributes: [fn('max', col('payout'))],
-      group: ["userId"],
-      raw: true,
+  findMax(userId: string): Promise<Bet> {
+    return this.betModel.findOne({
+      where: {
+        userId,
+      },
+      order: [
+        [fn('max', col('payout')), 'DESC']
+      ],
+      group: 'id'
     });
-    
   }
 
   async remove(id: string): Promise<void> {

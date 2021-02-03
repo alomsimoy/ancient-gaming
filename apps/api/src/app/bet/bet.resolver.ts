@@ -13,7 +13,10 @@ export interface BetEntity {
 
 @Resolver('Bet')
 export class BetResolver {
-  constructor(private readonly betService: BetService, private readonly userService: UserService) {}
+  constructor(
+    private readonly betService: BetService,
+    private readonly userService: UserService
+  ) {}
 
   @Query('getBet')
   getBet(@Args('id') id: number): Promise<BetEntity> {
@@ -26,8 +29,13 @@ export class BetResolver {
   }
 
   @Query('getBestBetPerUser')
-  getBestBetPerUser(): Promise<BetEntity[]> {
-    return this.betService.findBestPerUser();
+  async getBestBetPerUser(@Args('limit') limit?: number): Promise<BetEntity[]> {
+    const users = await this.userService.findAll(limit);
+    let bets = [];
+    for (const user of users) {
+      bets.push(await this.betService.findMax(user.id.toString()));
+    }
+    return bets;
   }
 
   @Mutation()
@@ -37,24 +45,24 @@ export class BetResolver {
     @Args('chance') chance: number
   ): Promise<BetEntity> {
     const user = await this.userService.findOne(userId.toString());
-    
+
     if (user.balance < betAmount) {
-      throw `Your balance (${user.balance}) is not enough.`
+      throw `Your balance (${user.balance}) is not enough.`;
     }
 
     const dice = Math.random() * 100;
-    const payout = ((betAmount * (chance - dice + 100)) / 100) - betAmount;
+    const payout = (betAmount * (chance - dice + 100)) / 100 - betAmount;
 
     user.balance = user.balance + payout;
 
     user.save();
-    
+
     return this.betService.create(
       userId,
       betAmount,
       chance,
       payout,
       chance > dice
-    )
+    );
   }
 }

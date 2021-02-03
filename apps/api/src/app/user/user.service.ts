@@ -9,8 +9,9 @@ export class UserService {
     private userModel: typeof User
   ) {}
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.findAll();
+  async findAll(limit?: number): Promise<User[]> {
+    const options = limit ? { limit } : {}
+    return this.userModel.findAll(options);
   }
 
   async create(name: string, balance: number): Promise<User> {
