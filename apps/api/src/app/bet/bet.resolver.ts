@@ -30,12 +30,7 @@ export class BetResolver {
 
   @Query('getBestBetPerUser')
   async getBestBetPerUser(@Args('limit') limit?: number): Promise<BetEntity[]> {
-    const users = await this.userService.findAll(limit);
-    let bets = [];
-    for (const user of users) {
-      bets.push(await this.betService.findMax(user.id.toString()));
-    }
-    return bets;
+    return this.betService.findBestBetPerUser(limit);
   }
 
   @Mutation()
